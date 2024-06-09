@@ -1,0 +1,31 @@
+<div class="register-container">
+  <div class="register-card">
+    <h2>Реєстрація</h2>
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Логін</label>
+        <input type="text" id="username" name="username" [(ngModel)]="username" required>
+        <div class="error-balloon" *ngIf="usernameError">{{ usernameError }}</div>
+      </div>
+      <div class="form-group">
+        <label for="email">Електронна пошта</label>
+        <input type="email" id="email" name="email" [(ngModel)]="email" required>
+        <div class="error-balloon" *ngIf="emailError">{{ emailError }}</div>
+      </div>
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" [(ngModel)]="password" required>
+        <div class="error-balloon" *ngIf="passwordError">{{ passwordError }}</div>
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Підтвердження паролю</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required>
+        <div class="error-balloon" *ngIf="confirmPasswordError">{{ confirmPasswordError }}</div>
+      </div>
+      <button type="submit">Зареєструватися</button>
+    </form>
+    <div class="links">
+      <a [routerLink]="['/login']">Вхід</a>
+    </div>
+  </div>
+</div>

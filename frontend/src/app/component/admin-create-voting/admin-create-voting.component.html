@@ -1,0 +1,209 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Вибори ректора КПІ ім. Ігоря Сікорського</title>
+
+  <!-- Bootstrap CSS and Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" media="all">
+  <script src="https://kit.fontawesome.com/961c2a8934.js" crossorigin="anonymous"></script>
+
+  <!-- Main CSS -->
+  <link href="admin-create-voting.component.css" rel="stylesheet" media="all">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&display=swap"
+        rel="stylesheet">
+</head>
+
+<div class="page-wrapper">
+  <!-- MENU SIDEBAR -->
+  <aside class="menu-sidebar d-none d-lg-block">
+    <div class="logo">
+      <a [routerLink]="['/admin-cabinet']">
+        <img src="assets/logo.png" alt="Votie KPI" class="img-responsive">
+      </a>
+    </div>
+    <div class="menu-sidebar-content js-scrollbar1" style="border-right:1px solid black;">
+      <nav class="navbar-sidebar">
+        <ul class="list-unstyled navbar-list">
+          <li>
+            <a [routerLink]="'/admin-home-votings'">Голосування</a>
+          </li>
+          <li>
+            <a [routerLink]="'/admin-home-users'">Користувачі</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+  <!-- END MENU SIDEBAR -->
+
+  <!-- PAGE CONTAINER -->
+  <div class="page-container">
+    <!-- HEADER DESKTOP -->
+    <header class="header-desktop">
+      <div class="section-content section-content-p30">
+        <div class="container-fluid">
+          <div class="header-wrap">
+            <form (ngSubmit)="onSearch($event)">
+              <input class="au-input au-input-xl" type="text" name="searchQuery"
+                     [(ngModel)]="searchQuery" placeholder="Пошук голосувань за публічним ID користувача...">
+              <button class="au-btn-submit" type="submit">Шукати</button>
+            </form>
+            <div class="current-date">
+              <p>Наразі: {{ currentTime }}</p>
+            </div>
+            <div class="cart-area d-n">
+              <a href="admin-cabinet.html">
+                <i class="fa-solid fa-user-gear"></i>
+              </a>
+              <div class="user-info d-flex flex-column align-items-center">
+                <a (click)="logout()" href="#" class="mt-1" style="color: white;">Вихід</a>
+                <div class="mt-1" style="color: white;">{{ user?.name }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="account-wrap"></div>
+        </div>
+      </div>
+    </header>
+    <!-- END HEADER DESKTOP -->
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content page-m">
+      <div class="section-content section-content-p30 e-spc">
+        <div class="container-fluid">
+
+          <div class="form-area">
+            <h3>Голосування</h3>
+            <div class="row">
+              <div class="col-md-9">
+                <div class="input-space">
+                  <input type="text" placeholder="Назва" [(ngModel)]="voting.name" name="name" required>
+                </div>
+              </div>
+              <div class="col-md-9">
+                <div class="input-space">
+                  <input type="text" placeholder="Опис" [(ngModel)]="voting.description" name="description" required>
+                </div>
+              </div>
+              <div class="clearfix"></div>
+              <div class="col-md-9">
+                <div class="input-space">
+                  <select [(ngModel)]="voting.category" name="type" required (change)="onTypeChange()">
+                    <option value="" disabled selected>Категорія</option>
+                    <option [value]="VOTING_CATEGORIES.UNIVERSITY">{{ VOTING_CATEGORIES.UNIVERSITY }}</option>
+                    <option [value]="VOTING_CATEGORIES.GROUP">{{ VOTING_CATEGORIES.GROUP }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-9" *ngIf="voting.category === 'Загальноуніверситетське'">
+                <div class="input-space">
+                  <select [(ngModel)]="voting.university" name="university" required>
+                    <option value="" disabled selected>ВИШ</option>
+                    <option *ngFor="let university of universities" [value]="university">{{ university }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-9" *ngIf="voting.category === 'Групове'">
+                <div class="input-space">
+                  <select [(ngModel)]="voting.university" name="university" required>
+                    <option value="" disabled selected>ВИШ</option>
+                    <option *ngFor="let university of universities" [value]="university">{{ university }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-9" *ngIf="voting.category === 'Групове'">
+                <div class="input-space">
+                  <input type="text" placeholder="Група" [(ngModel)]="voting.group" name="group" required>
+                </div>
+              </div>
+
+              <div class="col-md-9" style="width: max-content;">
+                <div class="group">
+                  <label class="input-label">Дата та час початку голосування:</label>
+                  <input class="input-space" type="datetime-local" [(ngModel)]="voting.dateTimeFrom" name="dateTimeFrom"
+                         required>
+                  <span class="bar"></span>
+                </div>
+              </div>
+              <div class="col-md-9" style="width: max-content;">
+                <div class="group">
+                  <label class="input-label">Дата та час кінця голосування:</label>
+                  <input class="input-space" type="datetime-local" [(ngModel)]="voting.dateTimeTo" name="dateTimeTo"
+                         required>
+                  <span class="bar"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form 2 -->
+          <div class="form-area">
+            <h3>Кандидати</h3>
+            <div *ngFor="let candidate of candidates; let i = index" class="candidate-form row">
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="Ім'я" [(ngModel)]="candidate.name" name="firstName{{i}}" required>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="Прізвище" [(ngModel)]="candidate.surname" name="lastName{{i}}"
+                         required>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="По-батькові" [(ngModel)]="candidate.patronymic" name="middleName{{i}}"
+                         required>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="Передвиборча промова" [(ngModel)]="candidate.speech"
+                         name="speech{{i}}" required>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="input-space">
+                  <label for="photo-upload-{{i}}">Завантажте фото кандидата:</label>
+                  <input id="photo-upload-{{i}}" type="file" (change)="onFileChange($event, i)" required>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <button class="au-btn-submit mt-2" style="width: 100%;" (click)="addCandidate()">Додати кандидата</button>
+            </div>
+            <div class="col-md-12">
+              <button class="au-btn-submit mt-2" style="width: 100%;" (click)="removeCandidate()">Видалити кандидата
+              </button>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <button class="au-btn-submit" style="width: 20%; height: 20%;" (click)="createVoting()">Створити
+              голосування
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END MAIN CONTENT -->
+
+  </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+<div class="fixed-bottom">
+  <footer>
+    <ul>
+      <li><a href="#">Про проект</a></li>
+      <li><a href="#">Контакти</a></li>
+      <li><a href="#">Інструкція</a></li>
+    </ul>
+  </footer>
+</div>

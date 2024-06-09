@@ -1,0 +1,235 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Вибори ректора КПІ ім. Ігоря Сікорського</title>
+
+  <!-- Bootstrap CSS and Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" media="all">
+  <script src="https://kit.fontawesome.com/961c2a8934.js" crossorigin="anonymous"></script>
+
+  <!-- Main CSS -->
+  <link href="voting-details-adm.component.css" rel="stylesheet" media="all">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&display=swap"
+        rel="stylesheet">
+</head>
+
+<div class="page-wrapper">
+  <!-- MENU SIDEBAR -->
+  <aside class="menu-sidebar d-none d-lg-block">
+    <div class="logo">
+      <a [routerLink]="['/admin-cabinet']">
+        <img src="assets/logo.png" alt="Votie KPI" class="img-responsive">
+      </a>
+    </div>
+    <div class="menu-sidebar-content js-scrollbar1" style="border-right:1px solid black;">
+      <nav class="navbar-sidebar">
+        <ul class="list-unstyled navbar-list">
+          <li>
+            <a [routerLink]="'/admin-home-votings'">Голосування</a>
+          </li>
+          <li>
+            <a [routerLink]="'/admin-home-users'">Користувачі</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+  <!-- END MENU SIDEBAR -->
+
+  <!-- PAGE CONTAINER -->
+  <div class="page-container">
+    <!-- HEADER DESKTOP -->
+    <header class="header-desktop">
+      <div class="section-content section-content-p30">
+        <div class="container-fluid">
+          <div class="header-wrap">
+            <form (ngSubmit)="onSearch($event)">
+              <input class="au-input au-input-xl" type="text" name="searchQuery"
+                     [(ngModel)]="searchQuery" placeholder="Пошук голосувань за публічним ID користувача...">
+              <button class="au-btn-submit" type="submit">Шукати</button>
+            </form>
+            <div class="current-date">
+              <p>Наразі: {{ currentTime }}</p>
+            </div>
+            <div class="cart-area d-n">
+              <a href="admin-cabinet.html">
+                <i class="fa-solid fa-user-gear"></i>
+              </a>
+              <div class="user-info d-flex flex-column align-items-center">
+                <a (click)="logout()" href="#" class="mt-1" style="color: white;">Вихід</a>
+                <div class="mt-1" style="color: white;">{{ user?.name }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="account-wrap"></div>
+        </div>
+      </div>
+    </header>
+    <!-- END HEADER DESKTOP -->
+
+    <!-- MAIN CONTENT -->
+    <div *ngIf="voting" class="main-content page-m">
+      <div class="section-content section-content-p30 e-spc">
+        <div class="container-fluid">
+
+          <div class="form-area">
+            <h3>Голосування</h3>
+            <div class="row">
+              <div class="col-md-9">
+                <div class="input-space">
+                  <span *ngIf="voting?.status === 'SCHEDULED'">Планується</span>
+                  <span *ngIf="voting?.status === 'ACTIVE'">Активне
+                <input type="checkbox" [(ngModel)]="suspendVoting" style="margin-left: 10px;"> Призупинити
+              </span>
+                  <span *ngIf="voting?.status === 'SUSPENDED'">Призупинено
+                <input type="checkbox" [(ngModel)]="activateVoting" style="margin-left: 10px;"> Активувати
+              </span>
+                  <span *ngIf="voting?.status === 'COMPLETED'">Завершене</span>
+                </div>
+              </div>
+
+              <div class="col-md-9">
+                <div class="input-space">
+                  <input type="text" placeholder="Назва" [(ngModel)]="voting.name">
+                </div>
+              </div>
+              <div class="col-md-9">
+                <div class="input-space">
+                  <input type="text" placeholder="Опис" [(ngModel)]="voting.description" style="height: fit-content;">
+                </div>
+              </div>
+              <div class="clearfix"></div>
+              <div class="col-md-9">
+                <div class="input-space">
+                  <select [(ngModel)]="voting.category">
+                    <option value="Загальноуніверситетське">Загальноуніверситетське</option>
+                    <option value="Групове">Групове</option>
+                  </select>
+                </div>
+                <div class="input-space">
+                  <select [(ngModel)]="voting.university" (ngModelChange)="onUniversityChange($event)">
+                    <option *ngFor="let university of universities" [value]="university">{{ university }}</option>
+                  </select>
+                </div>
+                <div class="input-space" *ngIf="voting?.category === 'Групове'">
+                  <input type="text" placeholder="Група" [(ngModel)]="voting.group">
+                </div>
+              </div>
+              <div class="col-md-9" style="width: max-content;">
+                <div class="group">
+                  <label class="input-label">Дата та час початку голосування: </label>
+                  <input class="input-space" type="datetime-local" [(ngModel)]="voting.dateTimeFrom">
+                  <span class="bar"></span>
+                </div>
+              </div>
+              <div class="col-md-9" style="width: max-content;">
+                <div class="group">
+                  <label class="input-label">Дата та час кінця голосування: </label>
+                  <input class="input-space" type="datetime-local" [(ngModel)]="voting.dateTimeTo">
+                  <span class="bar"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!--Form 2-->
+          <div class="form-area">
+            <h3>Кандидати</h3>
+            <div *ngFor="let candidate of voting?.candidates; let i = index" class="row candidate-card">
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="Ім'я" [(ngModel)]="candidate.name">
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="Прізвище" [(ngModel)]="candidate.surname">
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="По-батькові" [(ngModel)]="candidate.patronymic">
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="input-space">
+                  <input type="text" placeholder="Передвиборча промова" [(ngModel)]="candidate.speech">
+                </div>
+              </div>
+              <div class="col-md-12 text-center">
+                <img *ngIf="candidate.id != null && candidateImages[candidate.id]"
+                     [src]="candidateImages[candidate.id]" alt="Фото кандидата"
+                     class="candidate-photo" (click)="openModal(candidateImages[candidate.id])"><br>
+
+                <div style="display: flex; justify-content: center; align-items: center; margin-left: 100px;">
+                  <table style="border-collapse: collapse;">
+                    <tr>
+                      <td style="border: none; text-align: right; padding-right: 10px;">Оновити фото:</td>
+                      <td style="border: none; text-align: left; padding-left: 10px;"><input type="file" (change)="onFileSelected($event, candidate)"></td>
+                    </tr>
+                  </table>
+                </div>
+
+              </div>
+              <div class="col-md-12 text-center">
+                <br>
+                <button (click)="removeCandidate(i)" class="au-btn-submit"
+                        style="width: 20%; height: 50%; background-color: darkred; color: white;">Видалити кандидата</button>
+              </div>
+              <div class="clearfix"></div>
+            </div>
+            <br>
+            <div class="col-md-12 text-center">
+              <button (click)="addCandidate()" class="au-btn-submit" style="width: 30%; height: 50%;">Додати кандидата</button>
+            </div>
+          </div>
+
+          <!-- Modal -->
+          <div id="imageModal" class="modal" *ngIf="modalImage">
+            <span class="close" (click)="closeModal()">&times;</span>
+            <img class="modal-content" [src]="modalImage" (click)="closeModal()">
+          </div>
+
+          <div class="text-center">
+            <button (click)="saveVoting()" class="au-btn-submit" style="width: 60%; height: 40px;">Оновити</button>
+          </div><br>
+
+          <!-- Delete Voting Button -->
+          <div class="text-center mt-3">
+            <button class="btn btn-danger" (click)="confirmDeleteVoting()"
+                    style="width: 20%; height: 20%; color: black; font-weight: bold;">Видалити голосування
+            </button>
+          </div>
+
+          <!-- Confirmation Dialog -->
+          <div *ngIf="showDeleteConfirmation" class="modal-overlay">
+            <div class="modal-content">
+              <p>Ви впевнені, що хочете видалити це голосування?</p>
+              <button class="btn btn-secondary" (click)="cancelDelete()">Скасувати</button>
+              <button class="btn btn-danger" (click)="deleteVoting()">Видалити</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!-- END MAIN CONTENT-->
+
+  </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+<div class="fixed-bottom">
+  <footer>
+    <ul>
+      <li><a href="#">Про проект</a></li>
+      <li><a href="#">Контакти</a></li>
+      <li><a href="#">Інструкція</a></li>
+    </ul>
+  </footer>
+</div>

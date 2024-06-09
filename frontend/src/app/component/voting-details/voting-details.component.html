@@ -1,0 +1,219 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Вибори ректора КПІ ім. Ігоря Сікорського</title>
+
+  <!-- Bootstrap CSS and Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css" media="all">
+  <script src="https://kit.fontawesome.com/961c2a8934.js" crossorigin="anonymous"></script>
+
+  <!-- Main CSS -->
+  <link href="voting-details.component.css" rel="stylesheet" media="all">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&display=swap"
+        rel="stylesheet">
+</head>
+
+<div class="page-wrapper">
+  <!-- MENU SIDEBAR -->
+  <aside class="menu-sidebar d-none d-lg-block">
+    <div class="logo">
+      <a [routerLink]="['/user-home']">
+        <img src="assets/logo.png" alt="Votie KPI" class="img-responsive">
+      </a>
+    </div>
+    <div class="menu-sidebar-content js-scrollbar1" style="border-right:1px solid black;">
+      <nav class="navbar-sidebar">
+        <ul class="list-unstyled navbar-list">
+          <li>
+            <a [routerLink]="'/user-home'">Голосування</a>
+          </li>
+          <li>
+            <a [routerLink]="'/user-profile'">Мій профіль</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+  <!-- END MENU SIDEBAR -->
+
+  <!-- PAGE CONTAINER -->
+  <div class="page-container">
+    <!-- HEADER DESKTOP -->
+    <header class="header-desktop">
+      <div class="section-content section-content-p30">
+        <div class="container-fluid">
+          <div class="header-wrap">
+            <form (submit)="onSearch()">
+              <input class="au-input au-input-xl" type="text" name="searchQuery" [(ngModel)]="searchQuery"
+                     placeholder="Пошук голосувань за назвою...">
+              <button class="au-btn-submit" type="submit">
+                Шукати
+              </button>
+            </form>
+            <div class="current-date">
+              <p>Наразі: {{ currentTime }}</p>
+            </div>
+            <div class="cart-area d-n">
+              <a href="admin-cabinet.html">
+                <i class="fa-solid fa-user-gear"></i>
+              </a>
+              <div class="user-info d-flex flex-column align-items-center">
+                <a (click)="logout()" href="#" class="mt-1" style="color: white;">Вихід</a>
+                <div class="mt-1" style="color: white;">{{ user?.name }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="account-wrap"></div>
+        </div>
+      </div>
+    </header>
+    <!-- END HEADER DESKTOP -->
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" *ngIf="!isLoading">
+      <div class="section-content section-content-p30">
+        <div class="container-fluid">
+          <div class="row" *ngIf="voting">
+            <div class="card mb-3">
+              <img class="card-img-top" *ngIf="voting" [src]="getVotingImage()" alt="Voting Type">
+              <div class="card-body">
+                <h2 class="card-title">{{ voting.name }}</h2>
+                <p class="card-text">{{ voting.description }}</p>
+              </div>
+              <div class="card-body">
+                <p class="card-text" [ngClass]="getStatusLabelClass(voting.status)">
+                  {{ getDisplayStatus(voting.status) }}
+                </p>
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">Початок: {{ voting.dateTimeFrom | date:'dd.MM.yyyy HH:mm' }}</li>
+                <li class="list-group-item">Кінець: {{ voting.dateTimeTo | date:'dd.MM.yyyy HH:mm' }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <h1 class="text-center" style="margin-bottom: 0;">Знайомство з кандидатами: </h1>
+          <div class="row mt-2">
+            <div class="col-md-4" *ngFor="let candidate of voting.candidates">
+              <div class="card mb-3">
+                <img *ngIf="candidateImages[candidate.id]" [src]="candidateImages[candidate.id]"
+                     alt="{{ candidate.name }}" (click)="openModal(candidateImages[candidate.id])">
+                <div class="card-body">
+                  <h4 class="card-title">{{ candidate.surname }} {{ candidate.name }} {{ candidate.patronymic }}</h4>
+                  <p class="card-text">{{ candidate.speech }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vote section -->
+          <div class="row mt-4" *ngIf="voting.status === 'ACTIVE'">
+            <div class="col-md-12">
+              <div class="card mb-3">
+                <div class="card-body text-center">
+                  <h3>Проголосувати:</h3>
+                  <form *ngIf="!hasVoted">
+                    <div class="form-group">
+                      <label for="candidateSelect">Оберіть кандидата:</label>
+                      <select class="form-control" id="candidateSelect" [(ngModel)]="selectedCandidateId"
+                              name="candidateSelect">
+                        <option *ngFor="let candidate of voting.candidates"
+                                [value]="candidate.id">{{ candidate.surname }} {{ candidate.name }} {{ candidate.patronymic }}
+                        </option>
+                      </select>
+                    </div>
+                    <button type="button" class="btn btn-primary mt-2" (click)="submitVote()">Проголосувати</button>
+                  </form>
+                  <p *ngIf="hasVoted" class="mt-2">Ви вже проголосували в цьому голосуванні.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vote results section -->
+          <div *ngIf="voting.status === 'COMPLETED' && voteResults.length > 0">
+            <h3 class="text-center mt-4">Результати голосування:</h3>
+            <div class="chart-container">
+              <div *ngFor="let result of voteResults" class="chart-bar-container">
+                <span class="chart-bar-candidate">{{ result.candidate.name }}:</span>
+                <span class="chart-bar-votes">{{ result.voteAmount }} голосів ({{ result.percentage }}%)</span>
+              </div>
+            </div>
+            <h3 class="text-center mt-4">Список публічних ID користувачів, які взяли участь у голосуванні:</h3><br>
+            <ul class="list-group list-group-flush">
+              <li *ngFor="let userId of publicUserIds" class="list-group-item">
+                {{ userId }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Status Messages -->
+          <div *ngIf="voting.status !== 'COMPLETED'">
+            <br>
+            <h2 class="text-center" *ngIf="hasVoted">
+              Ви вже взяли участь у цьому голосуванні, дякуємо за Ваш голос!
+            </h2>
+            <h2 class="text-center" *ngIf="!hasVoted && voting.status === 'SCHEDULED'">
+              Голосування заплановано, заходьте пізніше
+            </h2>
+            <h2 class="text-center" *ngIf="!hasVoted && voting.status === 'SUSPENDED'">
+              Голосування призупинено, заходьте пізніше
+            </h2>
+            <div *ngIf="!hasVoted && voting.status === 'ACTIVE' && verificationStatus !== 'VERIFIED'">
+              <h2 class="text-center" style="color: darkred;">
+                Голосувати можуть тільки верифіковані користувачі, будь ласка, пройдіть верифікацію.
+              </h2>
+            </div>
+            <div *ngIf="!hasVoted && voting.status === 'ACTIVE' && verificationStatus === 'VERIFIED'">
+              <h2 class="text-center" style="color: darkgreen;">
+                Ви можете взяти участь у голосуванні, оберіть свій варіант у формі нижче.
+              </h2>
+            </div>
+          </div>
+
+          <!-- MODAL -->
+          <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;" *ngIf="isModalOpen">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Зображення кандидата</h5>
+                  <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body text-center">
+                  <img [src]="modalImage" class="img-fluid">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading spinner -->
+          <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+            <div class="spinner-border" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END MAIN CONTENT -->
+
+  </div>
+  <!-- END PAGE CONTAINER -->
+
+  <div class="fixed-bottom">
+    <footer>
+      <ul>
+        <li><a href="#">Про проект</a></li>
+        <li><a href="#">Контакти</a></li>
+        <li><a href="#">Інструкція</a></li>
+      </ul>
+    </footer>
+  </div>
+</div>
